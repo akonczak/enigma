@@ -5,7 +5,8 @@ Kotlin play ground with PKI
 
 
 1. How to load private key and cert 
-2. How to user PKI to encrypt and decrypt data 
+2. How to user PKI to encrypt and decrypt data
+3. How to use public key for signing  
 
 
 ## Generate key and cert

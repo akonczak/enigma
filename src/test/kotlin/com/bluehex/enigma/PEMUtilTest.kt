@@ -1,14 +1,21 @@
 package com.bluehex.enigma
 
+import com.bluehex.enigma.FileUtil.Companion.fileContentAsStream
 import com.bluehex.enigma.PEMUtil.Companion.CERT_BEGIN
 import com.bluehex.enigma.PEMUtil.Companion.CERT_END
 import com.bluehex.enigma.PEMUtil.Companion.KEY_BEGIN
 import com.bluehex.enigma.PEMUtil.Companion.KEY_END
+import com.bluehex.enigma.PEMUtil.Companion.readPrivateKey
 import org.hamcrest.CoreMatchers.`is`
 import org.junit.Assert.assertThat
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
+import java.io.InputStream
 import java.math.BigInteger
 import java.security.cert.X509Certificate
+import java.security.interfaces.RSAPrivateKey
+import java.security.spec.InvalidKeySpecException
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
@@ -43,16 +50,30 @@ internal class PEMUtilTest {
         assertFalse { PEMUtil.isKey("") }
     }
 
-
     @Test
     fun shouldReadCertificateFromFile() {
-        val certificate = PEMUtil.certificate(fileContent("certificate.pem"))
-        val first:X509Certificate = certificate.first() as X509Certificate
+        val certificate = PEMUtil.readPublicKey(fileContentAsStream("certificate.pem"))
+        val first: X509Certificate = certificate.first() as X509Certificate
         assertThat(first.serialNumber, `is`(BigInteger("17819279867143787359")))
     }
 
-    private fun fileContent(name: String): String {
-        return javaClass.classLoader.getResource(name).readText()
+    @Test
+    fun shouldReadCertificateFromFile1() {
+        val certificate = PEMUtil.readSinglePublicKey(fileContentAsStream("certificate.pem")) as X509Certificate
+        assertThat(certificate.serialNumber, `is`(BigInteger("17819279867143787359")))
+    }
+
+    @Test
+    fun shouldReadPrivateKeyFromFile() {
+        val privateKey = readPrivateKey(fileContentAsStream("key.pem")) as RSAPrivateKey
+        assertThat(privateKey.algorithm, `is`("RSA"))
+    }
+
+    @Test
+    fun shouldReadInvalidPrivateKeyFromFile() {
+        assertThrows(InvalidKeySpecException::class.java) {
+            readPrivateKey(fileContentAsStream("certificate.pem"))
+        }
     }
 
 }
